@@ -124,13 +124,15 @@ public class CP2102SerialDevice extends UsbSerialDevice
     }
 
     @Override
-    public void close()
+    public int close()
     {
-        setControlCommand(CP210x_IFC_ENABLE, CP210x_UART_DISABLE, null);
+        if(setControlCommand(CP210x_IFC_ENABLE, CP210x_UART_DISABLE, null)<0)
+            return -1;
         killWorkingThread();
         killWriteThread();
         stopFlowControlThread();
         connection.releaseInterface(mInterface);
+        return 0;
     }
 
     @Override
@@ -151,15 +153,17 @@ public class CP2102SerialDevice extends UsbSerialDevice
     }
 
     @Override
-    public void syncClose()
+    public int syncClose()
     {
-        setControlCommand(CP210x_IFC_ENABLE, CP210x_UART_DISABLE, null);
+        if(setControlCommand(CP210x_IFC_ENABLE, CP210x_UART_DISABLE, null)<0)
+            return -1;
         stopFlowControlThread();
         connection.releaseInterface(mInterface);
+        return 0;
     }
 
     @Override
-    public void setBaudRate(int baudRate)
+    public int setBaudRate(int baudRate)
     {
         byte[] data = new byte[] {
                 (byte) (baudRate & 0xff),
@@ -167,11 +171,11 @@ public class CP2102SerialDevice extends UsbSerialDevice
                 (byte) (baudRate >> 16 & 0xff),
                 (byte) (baudRate >> 24 & 0xff)
         };
-        setControlCommand(CP210x_SET_BAUDRATE, 0, data);
+        return setControlCommand(CP210x_SET_BAUDRATE, 0, data);
     }
 
     @Override
-    public void setDataBits(int dataBits)
+    public int setDataBits(int dataBits)
     {
         byte[] data = getCTL();
         switch(dataBits)
@@ -192,12 +196,12 @@ public class CP2102SerialDevice extends UsbSerialDevice
                 return;
         }
         byte wValue = (byte) ((data[1] << 8) | (data[0] & 0xFF));
-        setControlCommand(CP210x_SET_LINE_CTL, wValue, null);
+        return setControlCommand(CP210x_SET_LINE_CTL, wValue, null);
 
     }
 
     @Override
-    public void setStopBits(int stopBits)
+    public int setStopBits(int stopBits)
     {
         byte[] data = getCTL();
         switch(stopBits)
@@ -218,11 +222,11 @@ public class CP2102SerialDevice extends UsbSerialDevice
                 return;
         }
         byte wValue = (byte) ((data[1] << 8) | (data[0] & 0xFF));
-        setControlCommand(CP210x_SET_LINE_CTL, wValue, null);
+        return setControlCommand(CP210x_SET_LINE_CTL, wValue, null);
     }
 
     @Override
-    public void setParity(int parity)
+    public int setParity(int parity)
     {
         byte[] data = getCTL();
         switch(parity)
@@ -261,11 +265,11 @@ public class CP2102SerialDevice extends UsbSerialDevice
                 return;
         }
         byte wValue =  (byte) ((data[1] << 8) | (data[0] & 0xFF));
-        setControlCommand(CP210x_SET_LINE_CTL, wValue, null);
+        return setControlCommand(CP210x_SET_LINE_CTL, wValue, null);
     }
 
     @Override
-    public void setFlowControl(int flowControl)
+    public int setFlowControl(int flowControl)
     {
         switch(flowControl)
         {
@@ -278,7 +282,7 @@ public class CP2102SerialDevice extends UsbSerialDevice
                 };
                 rtsCtsEnabled = false;
                 dtrDsrEnabled = false;
-                setControlCommand(CP210x_SET_FLOW, 0, dataOff);
+                return setControlCommand(CP210x_SET_FLOW, 0, dataOff);
                 break;
             case UsbSerialInterface.FLOW_CONTROL_RTS_CTS:
                 byte[] dataRTSCTS = new byte[]{
@@ -287,13 +291,15 @@ public class CP2102SerialDevice extends UsbSerialDevice
                         (byte) 0x00, (byte) 0x80, (byte) 0x00, (byte) 0x00,
                         (byte) 0x00, (byte) 0x20, (byte) 0x00, (byte) 0x00
                 };
-                rtsCtsEnabled = true;
-                dtrDsrEnabled = false;
-                setControlCommand(CP210x_SET_FLOW, 0, dataRTSCTS);
-                setControlCommand(CP210x_SET_MHS, CP210x_MHS_RTS_ON, null);
+                if(setControlCommand(CP210x_SET_FLOW, 0, dataRTSCTS)<0)
+                    return -1;
+                if(setControlCommand(CP210x_SET_MHS, CP210x_MHS_RTS_ON, null)<0)
+                    return -1;
                 byte[] commStatusCTS = getCommStatus();
                 ctsState = (commStatusCTS[4] & 0x01) == 0x00;
-                startFlowControlThread();
+                rtsCtsEnabled = true;
+                dtrDsrEnabled = false;
+                startFlowControlThread(); return 0;
                 break;
             case UsbSerialInterface.FLOW_CONTROL_DSR_DTR:
                 byte[] dataDSRDTR = new byte[]{
@@ -302,11 +308,13 @@ public class CP2102SerialDevice extends UsbSerialDevice
                         (byte) 0x00, (byte) 0x80, (byte) 0x00, (byte) 0x00,
                         (byte) 0x00, (byte) 0x20, (byte) 0x00, (byte) 0x00
                 };
+                if(setControlCommand(CP210x_SET_FLOW, 0, dataDSRDTR)<0)
+                    return -1;
+                if(setControlCommand(CP210x_SET_MHS, CP210x_MHS_DTR_ON, null)<0)
+                    return -1;
+                byte[] commStatusDSR = getCommStatus();
                 dtrDsrEnabled = true;
                 rtsCtsEnabled = false;
-                setControlCommand(CP210x_SET_FLOW, 0, dataDSRDTR);
-                setControlCommand(CP210x_SET_MHS, CP210x_MHS_DTR_ON, null);
-                byte[] commStatusDSR = getCommStatus();
                 dsrState = (commStatusDSR[4] & 0x02) == 0x00;
                 startFlowControlThread();
                 break;
@@ -322,35 +330,35 @@ public class CP2102SerialDevice extends UsbSerialDevice
                         (byte) 0x00, (byte) 0x00, (byte) 0x00,
                         (byte) 0x00, (byte) 0x11, (byte) 0x13
                 };
-                setControlCommand(CP210x_SET_CHARS, 0, dataChars);
-                setControlCommand(CP210x_SET_FLOW, 0, dataXONXOFF);
+                if((setControlCommand(CP210x_SET_CHARS, 0, dataChars)>=0) && (setControlCommand(CP210x_SET_FLOW, 0, dataXONXOFF)>=0))
+                    return -1;
                 break;
             default:
-                return;
+                return 0;
         }
     }
 
     @Override
-    public void setRTS(boolean state)
+    public int setRTS(boolean state)
     {
         if(state)
         {
-            setControlCommand(CP210x_SET_MHS, CP210x_MHS_RTS_ON, null);
+            return setControlCommand(CP210x_SET_MHS, CP210x_MHS_RTS_ON, null);
         }else
         {
-            setControlCommand(CP210x_SET_MHS, CP210x_MHS_RTS_OFF, null);
+            return setControlCommand(CP210x_SET_MHS, CP210x_MHS_RTS_OFF, null);
         }
     }
 
     @Override
-    public void setDTR(boolean state)
+    public int setDTR(boolean state)
     {
         if(state)
         {
-            setControlCommand(CP210x_SET_MHS, CP210x_MHS_DTR_ON, null);
+            return setControlCommand(CP210x_SET_MHS, CP210x_MHS_DTR_ON, null);
         }else
         {
-            setControlCommand(CP210x_SET_MHS, CP210x_MHS_DTR_OFF, null);
+            return setControlCommand(CP210x_SET_MHS, CP210x_MHS_DTR_OFF, null);
         }
     }
 

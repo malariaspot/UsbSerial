@@ -84,13 +84,15 @@ public class CDCSerialDevice extends UsbSerialDevice
     }
 
     @Override
-    public void close()
+    public int close()
     {
-        setControlCommand(CDC_SET_CONTROL_LINE_STATE, CDC_CONTROL_LINE_OFF, null);
+        if(setControlCommand(CDC_SET_CONTROL_LINE_STATE, CDC_CONTROL_LINE_OFF, null)<0)
+            return -1;
         killWorkingThread();
         killWriteThread();
         connection.releaseInterface(mInterface);
         connection.close();
+        return 0;
     }
 
     @Override
@@ -109,15 +111,16 @@ public class CDCSerialDevice extends UsbSerialDevice
     }
 
     @Override
-    public void syncClose()
+    public int syncClose()
     {
-        setControlCommand(CDC_SET_CONTROL_LINE_STATE, CDC_CONTROL_LINE_OFF, null);
+        if(setControlCommand(CDC_SET_CONTROL_LINE_STATE, CDC_CONTROL_LINE_OFF, null)<0)
+            return -1
         connection.releaseInterface(mInterface);
-        connection.close();
+        return connection.close()
     }
 
     @Override
-    public void setBaudRate(int baudRate)
+    public int setBaudRate(int baudRate)
     {
         byte[] data = getLineCoding();
 
@@ -126,11 +129,11 @@ public class CDCSerialDevice extends UsbSerialDevice
         data[2] = (byte) (baudRate >> 16 & 0xff);
         data[3] = (byte) (baudRate >> 24 & 0xff);
 
-        setControlCommand(CDC_SET_LINE_CODING, 0, data);
+        return setControlCommand(CDC_SET_LINE_CODING, 0, data)
     }
 
     @Override
-    public void setDataBits(int dataBits)
+    public int setDataBits(int dataBits)
     {
         byte[] data = getLineCoding();
         switch(dataBits)
@@ -151,7 +154,7 @@ public class CDCSerialDevice extends UsbSerialDevice
                 return;
         }
 
-        setControlCommand(CDC_SET_LINE_CODING, 0, data);
+        return setControlCommand(CDC_SET_LINE_CODING, 0, data)
 
     }
 
@@ -180,7 +183,7 @@ public class CDCSerialDevice extends UsbSerialDevice
     }
 
     @Override
-    public void setParity(int parity)
+    public int setParity(int parity)
     {
         byte[] data = getLineCoding();
         switch(parity)
@@ -201,10 +204,10 @@ public class CDCSerialDevice extends UsbSerialDevice
                 data[5] = 0x04;
                 break;
             default:
-                return;
+                return 0;
         }
 
-        setControlCommand(CDC_SET_LINE_CODING, 0, data);
+        return setControlCommand(CDC_SET_LINE_CODING, 0, data);
 
     }
 
@@ -297,10 +300,12 @@ public class CDCSerialDevice extends UsbSerialDevice
         }
 
         // Default Setup
-        setControlCommand(CDC_SET_LINE_CODING, 0, CDC_DEFAULT_LINE_CODING);
-        setControlCommand(CDC_SET_CONTROL_LINE_STATE, CDC_CONTROL_LINE_ON, null);
+        if(setControlCommand(CDC_SET_LINE_CODING, 0, CDC_DEFAULT_LINE_CODING)<0)
+            return false;
+        if(setControlCommand(CDC_SET_CONTROL_LINE_STATE, CDC_CONTROL_LINE_ON, null)<0)
+            return false;
+        
 
-        return true;
     }
 
     private int setControlCommand(int request, int value, byte[] data)
