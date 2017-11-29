@@ -297,8 +297,10 @@ public class CDCSerialDevice extends UsbSerialDevice
         }
 
         // Default Setup
-        setControlCommand(CDC_SET_LINE_CODING, 0, CDC_DEFAULT_LINE_CODING);
-        setControlCommand(CDC_SET_CONTROL_LINE_STATE, CDC_CONTROL_LINE_ON, null);
+        if(setControlCommand(CDC_SET_LINE_CODING, 0, CDC_DEFAULT_LINE_CODING)<0)
+            return false;
+        if(setControlCommand(CDC_SET_CONTROL_LINE_STATE, CDC_CONTROL_LINE_ON, null)<0)
+            return false;
 
         return true;
     }
