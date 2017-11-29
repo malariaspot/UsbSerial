@@ -132,14 +132,14 @@ public abstract class UsbSerialDevice implements UsbSerialInterface
 
 
     @Override
-    public abstract void close();
+    public abstract int close();
 
     // Common Usb Serial Operations (I/O Synchronous)
     @Override
     public abstract boolean syncOpen();
 
     @Override
-    public abstract void syncClose();
+    public abstract int syncClose();
 
     @Override
     public int syncWrite(byte[] buffer, int timeout)
@@ -172,15 +172,15 @@ public abstract class UsbSerialDevice implements UsbSerialInterface
 
     // Serial port configuration
     @Override
-    public abstract void setBaudRate(int baudRate);
+    public abstract int setBaudRate(int baudRate);
     @Override
-    public abstract void setDataBits(int dataBits);
+    public abstract int setDataBits(int dataBits);
     @Override
-    public abstract void setStopBits(int stopBits);
+    public abstract int setStopBits(int stopBits);
     @Override
-    public abstract void setParity(int parity);
+    public abstract int setParity(int parity);
     @Override
-    public abstract void setFlowControl(int flowControl);
+    public abstract int setFlowControl(int flowControl);
 
     //Debug options
     public void debug(boolean value)

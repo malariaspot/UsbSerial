@@ -98,12 +98,14 @@ public class BLED112SerialDevice extends UsbSerialDevice
     }
 
     @Override
-    public void close()
+    public int close()
     {
-        setControlCommand(BLED112_SET_CONTROL_LINE_STATE, BLED112_DISCONNECT_CONTROL_LINE , null);
+        if(setControlCommand(BLED112_SET_CONTROL_LINE_STATE, BLED112_DISCONNECT_CONTROL_LINE , null)<0)
+            return -1;
         killWorkingThread();
         killWriteThread();
         connection.releaseInterface(mInterface);
+        return 0;
     }
 
     @Override
@@ -113,13 +115,13 @@ public class BLED112SerialDevice extends UsbSerialDevice
     }
 
     @Override
-    public void syncClose()
+    public int syncClose()
     {
-
+        return -1;
     }
 
     @Override
-    public void setBaudRate(int baudRate)
+    public int setBaudRate(int baudRate)
     {
         byte[] data = getLineCoding();
 
@@ -128,11 +130,11 @@ public class BLED112SerialDevice extends UsbSerialDevice
         data[1] = (byte) (baudRate >> 16 & 0xff);
         data[0] = (byte) (baudRate >> 24 & 0xff);
 
-        setControlCommand(BLED112_SET_LINE_CODING, 0, data);
+        return setControlCommand(BLED112_SET_LINE_CODING, 0, data);
     }
 
     @Override
-    public void setDataBits(int dataBits)
+    public int setDataBits(int dataBits)
     {
         byte[] data = getLineCoding();
         switch(dataBits)
@@ -151,12 +153,12 @@ public class BLED112SerialDevice extends UsbSerialDevice
                 break;
         }
 
-        setControlCommand(BLED112_SET_LINE_CODING, 0, data);
+        return setControlCommand(BLED112_SET_LINE_CODING, 0, data);
 
     }
 
     @Override
-    public void setStopBits(int stopBits)
+    public int setStopBits(int stopBits)
     {
         byte[] data = getLineCoding();
         switch(stopBits)
@@ -172,13 +174,13 @@ public class BLED112SerialDevice extends UsbSerialDevice
                 break;
         }
 
-        setControlCommand(BLED112_SET_LINE_CODING, 0, data);
+        return setControlCommand(BLED112_SET_LINE_CODING, 0, data);
 
 
     }
 
     @Override
-    public void setParity(int parity)
+    public int setParity(int parity)
     {
         byte[] data = getLineCoding();
         switch(parity)
@@ -200,7 +202,7 @@ public class BLED112SerialDevice extends UsbSerialDevice
                 break;
         }
 
-        setControlCommand(BLED112_SET_LINE_CODING, 0, data);
+        return setControlCommand(BLED112_SET_LINE_CODING, 0, data);
 
     }
 
@@ -217,10 +219,10 @@ public class BLED112SerialDevice extends UsbSerialDevice
     }
 
     @Override
-    public void setFlowControl(int flowControl)
+    public int setFlowControl(int flowControl)
     {
         // TODO Auto-generated method stub
-
+        return -1;
     }
 
     @Override

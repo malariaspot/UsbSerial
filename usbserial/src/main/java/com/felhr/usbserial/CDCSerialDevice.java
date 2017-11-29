@@ -114,9 +114,10 @@ public class CDCSerialDevice extends UsbSerialDevice
     public int syncClose()
     {
         if(setControlCommand(CDC_SET_CONTROL_LINE_STATE, CDC_CONTROL_LINE_OFF, null)<0)
-            return -1
+            return -1;
         connection.releaseInterface(mInterface);
-        return connection.close()
+        connection.close();
+        return 0;
     }
 
     @Override
@@ -129,7 +130,7 @@ public class CDCSerialDevice extends UsbSerialDevice
         data[2] = (byte) (baudRate >> 16 & 0xff);
         data[3] = (byte) (baudRate >> 24 & 0xff);
 
-        return setControlCommand(CDC_SET_LINE_CODING, 0, data)
+        return setControlCommand(CDC_SET_LINE_CODING, 0, data);
     }
 
     @Override
@@ -151,15 +152,15 @@ public class CDCSerialDevice extends UsbSerialDevice
                 data[6] = 0x08;
                 break;
             default:
-                return;
+                return 0;
         }
 
-        return setControlCommand(CDC_SET_LINE_CODING, 0, data)
+        return setControlCommand(CDC_SET_LINE_CODING, 0, data);
 
     }
 
     @Override
-    public void setStopBits(int stopBits)
+    public int setStopBits(int stopBits)
     {
         byte[] data = getLineCoding();
         switch(stopBits)
@@ -174,10 +175,10 @@ public class CDCSerialDevice extends UsbSerialDevice
                 data[4] = 0x02;
                 break;
             default:
-                return;
+                return 0;
         }
 
-        setControlCommand(CDC_SET_LINE_CODING, 0, data);
+        return setControlCommand(CDC_SET_LINE_CODING, 0, data);
 
 
     }
@@ -212,10 +213,10 @@ public class CDCSerialDevice extends UsbSerialDevice
     }
 
     @Override
-    public void setFlowControl(int flowControl)
+    public int setFlowControl(int flowControl)
     {
         // TODO Auto-generated method stub
-
+        return -1;
     }
 
     @Override
@@ -305,7 +306,7 @@ public class CDCSerialDevice extends UsbSerialDevice
         if(setControlCommand(CDC_SET_CONTROL_LINE_STATE, CDC_CONTROL_LINE_ON, null)<0)
             return false;
         
-
+        return true;
     }
 
     private int setControlCommand(int request, int value, byte[] data)

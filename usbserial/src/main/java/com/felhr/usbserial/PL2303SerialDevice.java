@@ -111,7 +111,7 @@ public class PL2303SerialDevice extends UsbSerialDevice
     }
 
     @Override
-    public void setBaudRate(int baudRate)
+    public int setBaudRate(int baudRate)
     {
         byte[] tempBuffer = new byte[4];
         tempBuffer[0] = (byte) (baudRate & 0xff);
@@ -125,12 +125,12 @@ public class PL2303SerialDevice extends UsbSerialDevice
             defaultSetLine[1] = tempBuffer[1];
             defaultSetLine[2] = tempBuffer[2];
             defaultSetLine[3] = tempBuffer[3];
-            setControlCommand(PL2303_REQTYPE_HOST2DEVICE, PL2303_SET_LINE_CODING, 0x0000, 0, defaultSetLine);
+            return setControlCommand(PL2303_REQTYPE_HOST2DEVICE, PL2303_SET_LINE_CODING, 0x0000, 0, defaultSetLine);
         }
     }
 
     @Override
-    public void setDataBits(int dataBits)
+    public int setDataBits(int dataBits)
     {
         switch(dataBits)
         {
@@ -138,38 +138,38 @@ public class PL2303SerialDevice extends UsbSerialDevice
                 if(defaultSetLine[6] != 0x05)
                 {
                     defaultSetLine[6] = 0x05;
-                    setControlCommand(PL2303_REQTYPE_HOST2DEVICE, PL2303_SET_LINE_CODING, 0x0000, 0, defaultSetLine);
+                    return setControlCommand(PL2303_REQTYPE_HOST2DEVICE, PL2303_SET_LINE_CODING, 0x0000, 0, defaultSetLine);
                 }
                 break;
             case UsbSerialInterface.DATA_BITS_6:
                 if(defaultSetLine[6] != 0x06)
                 {
                     defaultSetLine[6] = 0x06;
-                    setControlCommand(PL2303_REQTYPE_HOST2DEVICE, PL2303_SET_LINE_CODING, 0x0000, 0, defaultSetLine);
+                    return setControlCommand(PL2303_REQTYPE_HOST2DEVICE, PL2303_SET_LINE_CODING, 0x0000, 0, defaultSetLine);
                 }
                 break;
             case UsbSerialInterface.DATA_BITS_7:
                 if(defaultSetLine[6] != 0x07)
                 {
                     defaultSetLine[6] = 0x07;
-                    setControlCommand(PL2303_REQTYPE_HOST2DEVICE, PL2303_SET_LINE_CODING, 0x0000, 0, defaultSetLine);
+                    return setControlCommand(PL2303_REQTYPE_HOST2DEVICE, PL2303_SET_LINE_CODING, 0x0000, 0, defaultSetLine);
                 }
                 break;
             case UsbSerialInterface.DATA_BITS_8:
                 if(defaultSetLine[6] != 0x08)
                 {
                     defaultSetLine[6] = 0x08;
-                    setControlCommand(PL2303_REQTYPE_HOST2DEVICE, PL2303_SET_LINE_CODING, 0x0000, 0, defaultSetLine);
+                    return setControlCommand(PL2303_REQTYPE_HOST2DEVICE, PL2303_SET_LINE_CODING, 0x0000, 0, defaultSetLine);
                 }
                 break;
             default:
-                return;
+                return -1;
         }
 
     }
 
     @Override
-    public void setStopBits(int stopBits)
+    public int setStopBits(int stopBits)
     {
         switch(stopBits)
         {
@@ -177,30 +177,30 @@ public class PL2303SerialDevice extends UsbSerialDevice
                 if(defaultSetLine[4] != 0x00)
                 {
                     defaultSetLine[4] = 0x00;
-                    setControlCommand(PL2303_REQTYPE_HOST2DEVICE, PL2303_SET_LINE_CODING, 0x0000, 0, defaultSetLine);
+                    return setControlCommand(PL2303_REQTYPE_HOST2DEVICE, PL2303_SET_LINE_CODING, 0x0000, 0, defaultSetLine);
                 }
                 break;
             case UsbSerialInterface.STOP_BITS_15:
                 if(defaultSetLine[4] != 0x01)
                 {
                     defaultSetLine[4] = 0x01;
-                    setControlCommand(PL2303_REQTYPE_HOST2DEVICE, PL2303_SET_LINE_CODING, 0x0000, 0, defaultSetLine);
+                    return setControlCommand(PL2303_REQTYPE_HOST2DEVICE, PL2303_SET_LINE_CODING, 0x0000, 0, defaultSetLine);
                 }
                 break;
             case UsbSerialInterface.STOP_BITS_2:
                 if(defaultSetLine[4] != 0x02)
                 {
                     defaultSetLine[4] = 0x02;
-                    setControlCommand(PL2303_REQTYPE_HOST2DEVICE, PL2303_SET_LINE_CODING, 0x0000, 0, defaultSetLine);
+                    return setControlCommand(PL2303_REQTYPE_HOST2DEVICE, PL2303_SET_LINE_CODING, 0x0000, 0, defaultSetLine);
                 }
                 break;
             default:
-                return;
+                return -1;
         }
     }
 
     @Override
-    public void setParity(int parity)
+    public int setParity(int parity)
     {
         switch(parity)
         {
@@ -208,39 +208,39 @@ public class PL2303SerialDevice extends UsbSerialDevice
                 if(defaultSetLine[5] != 0x00)
                 {
                     defaultSetLine[5] = 0x00;
-                    setControlCommand(PL2303_REQTYPE_HOST2DEVICE, PL2303_SET_LINE_CODING, 0x0000, 0, defaultSetLine);
+                    return setControlCommand(PL2303_REQTYPE_HOST2DEVICE, PL2303_SET_LINE_CODING, 0x0000, 0, defaultSetLine);
                 }
                 break;
             case UsbSerialInterface.PARITY_ODD:
                 if(defaultSetLine[5] != 0x01)
                 {
                     defaultSetLine[5] = 0x01;
-                    setControlCommand(PL2303_REQTYPE_HOST2DEVICE, PL2303_SET_LINE_CODING, 0x0000, 0, defaultSetLine);
+                    return setControlCommand(PL2303_REQTYPE_HOST2DEVICE, PL2303_SET_LINE_CODING, 0x0000, 0, defaultSetLine);
                 }
                 break;
             case UsbSerialInterface.PARITY_EVEN:
                 if(defaultSetLine[5] != 0x02)
                 {
                     defaultSetLine[5] = 0x02;
-                    setControlCommand(PL2303_REQTYPE_HOST2DEVICE, PL2303_SET_LINE_CODING, 0x0000, 0, defaultSetLine);
+                    return setControlCommand(PL2303_REQTYPE_HOST2DEVICE, PL2303_SET_LINE_CODING, 0x0000, 0, defaultSetLine);
                 }
                 break;
             case UsbSerialInterface.PARITY_MARK:
                 if(defaultSetLine[5] != 0x03)
                 {
                     defaultSetLine[5] = 0x03;
-                    setControlCommand(PL2303_REQTYPE_HOST2DEVICE, PL2303_SET_LINE_CODING, 0x0000, 0, defaultSetLine);
+                    return setControlCommand(PL2303_REQTYPE_HOST2DEVICE, PL2303_SET_LINE_CODING, 0x0000, 0, defaultSetLine);
                 }
                 break;
             case UsbSerialInterface.PARITY_SPACE:
                 if(defaultSetLine[5] != 0x04)
                 {
                     defaultSetLine[5] = 0x04;
-                    setControlCommand(PL2303_REQTYPE_HOST2DEVICE, PL2303_SET_LINE_CODING, 0x0000, 0, defaultSetLine);
+                    return setControlCommand(PL2303_REQTYPE_HOST2DEVICE, PL2303_SET_LINE_CODING, 0x0000, 0, defaultSetLine);
                 }
                 break;
             default:
-                return;
+                return -1;
         }
 
     }
