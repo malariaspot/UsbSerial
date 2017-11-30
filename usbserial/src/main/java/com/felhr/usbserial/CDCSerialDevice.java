@@ -94,6 +94,8 @@ public class CDCSerialDevice extends UsbSerialDevice
                 Log.e(CLASS_ID,"Couldn't set line coding");
                 return false;
             }
+            setDTR(true);
+            setRTS(true);
 
 
             return true;
