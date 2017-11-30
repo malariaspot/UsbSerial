@@ -94,8 +94,9 @@ public class CDCSerialDevice extends UsbSerialDevice
                 Log.e(CLASS_ID,"Couldn't set line coding");
                 return false;
             }
-            setDTR(true);
-            setRTS(true);
+            dtr = true;
+            rts = true;
+            setDtrRts();
 
 
             return true;
@@ -354,20 +355,21 @@ public class CDCSerialDevice extends UsbSerialDevice
         {
             dataLength = data.length;
         }
-        int response = connection.controlTransfer(CDC_REQTYPE_HOST2DEVICE, request, value, 0, data, dataLength, USB_TIMEOUT);
+        int response = connection.controlTransfer(CDC_REQTYPE_HOST2DEVICE, request, value, 0, data, dataLength, 5000);
         Log.i(CLASS_ID,"Control Transfer Response: " + String.valueOf(response));
         return response;
     }
 
     private void setDtrRts() {
         int value = (rts ? 0x2 : 0) | (dtr ? 0x1 : 0);
-        setControlCommand(CDC_SET_CONTROL_LINE_STATE, value, null);
+        if(setControlCommand(CDC_SET_CONTROL_LINE_STATE, value, null)<0)
+            Log.e(CLASS_ID,"Couldn't set DTR/RTS");
     }
 
     private byte[] getLineCoding()
     {
         byte[] data = new byte[7];
-        int response = connection.controlTransfer(CDC_REQTYPE_DEVICE2HOST, CDC_GET_LINE_CODING, 0, 0, data, data.length, USB_TIMEOUT);
+        int response = connection.controlTransfer(CDC_REQTYPE_DEVICE2HOST, CDC_GET_LINE_CODING, 0, 0, data, data.length, 5000);
         Log.i(CLASS_ID,"Control Transfer Response: " + String.valueOf(response));
         return data;
     }
