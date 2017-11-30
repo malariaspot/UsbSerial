@@ -30,9 +30,9 @@ public class CDCSerialDevice extends UsbSerialDevice
      *  Flow Control: Off
      */
     private static final byte[] CDC_DEFAULT_LINE_CODING = new byte[] {
-            (byte) 0x00, // Offset 0:4 dwDTERate
-            (byte) 0xC2,
-            (byte) 0x01,
+            (byte) 0x80, // Offset 0:4 dwDTERate
+            (byte) 0x25,
+            (byte) 0x00,
             (byte) 0x00,
             (byte) 0x00, // Offset 5 bCharFormat (1 Stop bit)
             (byte) 0x00, // bParityType (None)
