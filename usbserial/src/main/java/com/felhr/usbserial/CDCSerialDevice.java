@@ -19,6 +19,8 @@ public class CDCSerialDevice extends UsbSerialDevice
     private static final int CDC_GET_LINE_CODING = 0x21;
     private static final int CDC_SET_CONTROL_LINE_STATE = 0x22;
 
+    private boolean dtr, rts;
+
     /***
      *  Default Serial Configuration
      *  Baud rate: 115200
@@ -227,13 +229,15 @@ public class CDCSerialDevice extends UsbSerialDevice
     @Override
     public void setRTS(boolean state)
     {
-        //TODO
+        rts = state;
+        setDtrRts();
     }
 
     @Override
     public void setDTR(boolean state)
     {
-        //TODO
+        dtr = state;
+        setDtrRts();
     }
 
     @Override
@@ -325,10 +329,9 @@ public class CDCSerialDevice extends UsbSerialDevice
             outEndpoint = mInterface.getEndpoint(0);
         }
 
-
-        if(setControlCommand(CDC_SET_LINE_CODING, 0, CDC_DEFAULT_LINE_CODING)<0)
-            return false;
         if(setControlCommand(CDC_SET_CONTROL_LINE_STATE, CDC_CONTROL_LINE_ON, null)<0)
+            return false;
+        if(setControlCommand(CDC_SET_LINE_CODING, 0, CDC_DEFAULT_LINE_CODING)<0)
             return false;
         return true;
     }
@@ -343,6 +346,11 @@ public class CDCSerialDevice extends UsbSerialDevice
         int response = connection.controlTransfer(CDC_REQTYPE_HOST2DEVICE, request, value, 0, data, dataLength, USB_TIMEOUT);
         Log.i(CLASS_ID,"Control Transfer Response: " + String.valueOf(response));
         return response;
+    }
+
+    private void setDtrRts() {
+        int value = (rts ? 0x2 : 0) | (dtr ? 0x1 : 0);
+        setControlCommand(CDC_SET_CONTROL_LINE_STATE, value, null);
     }
 
     private byte[] getLineCoding()
