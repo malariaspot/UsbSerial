@@ -322,10 +322,14 @@ public class CDCSerialDevice extends UsbSerialDevice
             ctrlEndpoint = mControlInterface.getEndpoint(0);
 
             //Activate serial
-            if(setControlCommand(CDC_SET_CONTROL_LINE_STATE, CDC_CONTROL_LINE_ON, null)<0)
+            if(setControlCommand(CDC_SET_CONTROL_LINE_STATE, CDC_CONTROL_LINE_ON, null)<0) {
+                Log.e(CLASS_ID,"Couldn't activate control line");
                 return false;
-            if(setControlCommand(CDC_SET_LINE_CODING, 0, CDC_DEFAULT_LINE_CODING)<0)
+            }
+            if(setControlCommand(CDC_SET_LINE_CODING, 0, CDC_DEFAULT_LINE_CODING)<0){
+                Log.e(CLASS_ID,"Couldn't set line coding");
                 return false;
+            }
 
 
             if(!connection.claimInterface(mInterface,true)){
