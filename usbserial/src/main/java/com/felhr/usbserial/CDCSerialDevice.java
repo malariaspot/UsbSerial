@@ -85,6 +85,17 @@ public class CDCSerialDevice extends UsbSerialDevice
 
             asyncMode = true;
 
+            //Activate serial
+            if(setControlCommand(CDC_SET_CONTROL_LINE_STATE, CDC_CONTROL_LINE_ON, null)<0) {
+                Log.e(CLASS_ID,"Couldn't activate control line");
+                return false;
+            }
+            if(setControlCommand(CDC_SET_LINE_CODING, 0, CDC_DEFAULT_LINE_CODING)<0){
+                Log.e(CLASS_ID,"Couldn't set line coding");
+                return false;
+            }
+
+
             return true;
         }else
         {
@@ -320,17 +331,6 @@ public class CDCSerialDevice extends UsbSerialDevice
                 Log.d(CLASS_ID,"Control interface claimed");
             }
             ctrlEndpoint = mControlInterface.getEndpoint(0);
-
-            //Activate serial
-            if(setControlCommand(CDC_SET_CONTROL_LINE_STATE, CDC_CONTROL_LINE_ON, null)<0) {
-                Log.e(CLASS_ID,"Couldn't activate control line");
-                return false;
-            }
-            if(setControlCommand(CDC_SET_LINE_CODING, 0, CDC_DEFAULT_LINE_CODING)<0){
-                Log.e(CLASS_ID,"Couldn't set line coding");
-                return false;
-            }
-
 
             if(!connection.claimInterface(mInterface,true)){
                 Log.e(CLASS_ID,"Could not claim data interface");
