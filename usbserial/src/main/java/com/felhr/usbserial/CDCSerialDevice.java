@@ -312,12 +312,7 @@ public class CDCSerialDevice extends UsbSerialDevice
 
             }
         }else{
-            if(!connection.claimInterface(mInterface,true)){
-                Log.e(CLASS_ID,"Could not claim data interface");
-                return false;
-            }else{
-                Log.d(CLASS_ID,"Data interface claimed");
-            }
+
             if(!connection.claimInterface(mControlInterface,true)){
                 Log.e(CLASS_ID,"Could not claim control interface");
                 return false;
@@ -325,14 +320,24 @@ public class CDCSerialDevice extends UsbSerialDevice
                 Log.d(CLASS_ID,"Control interface claimed");
             }
             ctrlEndpoint = mControlInterface.getEndpoint(0);
+
+            //Activate serial
+            if(setControlCommand(CDC_SET_CONTROL_LINE_STATE, CDC_CONTROL_LINE_ON, null)<0)
+                return false;
+            if(setControlCommand(CDC_SET_LINE_CODING, 0, CDC_DEFAULT_LINE_CODING)<0)
+                return false;
+
+
+            if(!connection.claimInterface(mInterface,true)){
+                Log.e(CLASS_ID,"Could not claim data interface");
+                return false;
+            }else{
+                Log.d(CLASS_ID,"Data interface claimed");
+            }
             inEndpoint = mInterface.getEndpoint(1);
             outEndpoint = mInterface.getEndpoint(0);
         }
 
-        if(setControlCommand(CDC_SET_CONTROL_LINE_STATE, CDC_CONTROL_LINE_ON, null)<0)
-            return false;
-        if(setControlCommand(CDC_SET_LINE_CODING, 0, CDC_DEFAULT_LINE_CODING)<0)
-            return false;
         return true;
     }
 
