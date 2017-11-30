@@ -41,8 +41,10 @@ public class CDCSerialDevice extends UsbSerialDevice
     private static final int CDC_CONTROL_LINE_OFF = 0x0000;
 
     private UsbInterface mInterface;
+    private UsbInterface mControlInterface;
     private UsbEndpoint inEndpoint;
     private UsbEndpoint outEndpoint;
+    private UsbEndpoint ctrlEndpoint;
     private UsbRequest requestIN;
 
     public CDCSerialDevice(UsbDevice device, UsbDeviceConnection connection)
@@ -53,7 +55,12 @@ public class CDCSerialDevice extends UsbSerialDevice
     public CDCSerialDevice(UsbDevice device, UsbDeviceConnection connection, int iface)
     {
         super(device, connection);
-        mInterface = device.getInterface(iface >= 0 ? iface : findFirstCDC(device));
+        mInterface = device.getInterface(findFirstCDC(device));
+        if(findControlCDC(device) < 0){
+            mControlInterface = null;
+        }else {
+            mControlInterface = device.getInterface(findControlCDC(device));
+        }
     }
 
     @Override
@@ -90,6 +97,7 @@ public class CDCSerialDevice extends UsbSerialDevice
         killWorkingThread();
         killWriteThread();
         connection.releaseInterface(mInterface);
+        connection.releaseInterface(mControlInterface);
         connection.close();
     }
 
@@ -113,6 +121,7 @@ public class CDCSerialDevice extends UsbSerialDevice
     {
         setControlCommand(CDC_SET_CONTROL_LINE_STATE, CDC_CONTROL_LINE_OFF, null);
         connection.releaseInterface(mInterface);
+        connection.releaseInterface(mControlInterface);
         connection.close();
     }
 
@@ -265,43 +274,62 @@ public class CDCSerialDevice extends UsbSerialDevice
 
     private boolean openCDC()
     {
-        if(connection.claimInterface(mInterface, true))
-        {
-            Log.i(CLASS_ID, "Interface succesfully claimed");
-        }else
-        {
-            Log.i(CLASS_ID, "Interface could not be claimed");
-            return false;
-        }
-
-        // Assign endpoints
-        int numberEndpoints = mInterface.getEndpointCount();
-        for(int i=0;i<=numberEndpoints-1;i++)
-        {
-            UsbEndpoint endpoint = mInterface.getEndpoint(i);
-            if(endpoint.getType() == UsbConstants.USB_ENDPOINT_XFER_BULK
-                    && endpoint.getDirection() == UsbConstants.USB_DIR_IN)
-            {
-                inEndpoint = endpoint;
-            }else if(endpoint.getType() == UsbConstants.USB_ENDPOINT_XFER_BULK
-                    && endpoint.getDirection() == UsbConstants.USB_DIR_OUT)
-            {
-                outEndpoint = endpoint;
+        if(mControlInterface == null){
+            mControlInterface = mInterface;
+            if(!connection.claimInterface(mInterface,true)){
+                Log.e(CLASS_ID,"Could not claim interface");
+                return false;
             }
+            int numberEndpoints = mInterface.getEndpointCount();
+            if(numberEndpoints < 3) {
+                Log.e(CLASS_ID,"Not enough endpoints");
+                return false;
+            }
+
+            ctrlEndpoint = null;
+            inEndpoint = null;
+            outEndpoint = null;
+
+            for(int i=0;i<numberEndpoints;i++)
+            {
+                UsbEndpoint endpoint = mControlInterface.getEndpoint(i);
+                if(endpoint.getType() == UsbConstants.USB_ENDPOINT_XFER_BULK
+                        && endpoint.getDirection() == UsbConstants.USB_DIR_IN)
+                {
+                    inEndpoint = endpoint;
+                }else if(endpoint.getType() == UsbConstants.USB_ENDPOINT_XFER_BULK
+                        && endpoint.getDirection() == UsbConstants.USB_DIR_OUT)
+                {
+                    outEndpoint = endpoint;
+                }else if(endpoint.getType() == UsbConstants.USB_ENDPOINT_XFER_INT &&
+                        endpoint.getDirection() == UsbConstants.USB_DIR_IN){
+                    ctrlEndpoint = endpoint;
+                }
+
+            }
+        }else{
+            if(!connection.claimInterface(mInterface,true)){
+                Log.e(CLASS_ID,"Could not claim data interface");
+                return false;
+            }else{
+                Log.d(CLASS_ID,"Data interface claimed");
+            }
+            if(!connection.claimInterface(mControlInterface,true)){
+                Log.e(CLASS_ID,"Could not claim control interface");
+                return false;
+            }else{
+                Log.d(CLASS_ID,"Control interface claimed");
+            }
+            ctrlEndpoint = mControlInterface.getEndpoint(0);
+            inEndpoint = mInterface.getEndpoint(1);
+            outEndpoint = mInterface.getEndpoint(0);
         }
 
-        if(outEndpoint == null || inEndpoint == null)
-        {
-            Log.i(CLASS_ID, "Interface does not have an IN or OUT interface");
-            return false;
-        }
 
-        // Default Setup
         if(setControlCommand(CDC_SET_LINE_CODING, 0, CDC_DEFAULT_LINE_CODING)<0)
             return false;
         if(setControlCommand(CDC_SET_CONTROL_LINE_STATE, CDC_CONTROL_LINE_ON, null)<0)
             return false;
-
         return true;
     }
 
@@ -341,4 +369,18 @@ public class CDCSerialDevice extends UsbSerialDevice
         return -1;
     }
 
+    private static int findControlCDC(UsbDevice device){
+        int interfaceCount = device.getInterfaceCount();
+
+        for (int iIndex = 0; iIndex < interfaceCount; ++iIndex)
+        {
+            if (device.getInterface(iIndex).getInterfaceClass() == UsbConstants.USB_CLASS_COMM)
+            {
+                return iIndex;
+            }
+        }
+
+        Log.i(CLASS_ID, "There is no CDC class interface");
+        return -1;
+    }
 }
