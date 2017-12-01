@@ -94,7 +94,7 @@ public class CDCSerialDevice extends UsbSerialDevice
                 Log.e(CLASS_ID,"Couldn't set line coding");
                 return false;
             }
-            dtr = true;
+
             rts = true;
             setDtrRts();
 
@@ -364,6 +364,8 @@ public class CDCSerialDevice extends UsbSerialDevice
         int value = (rts ? 0x2 : 0) | (dtr ? 0x1 : 0);
         if(setControlCommand(CDC_SET_CONTROL_LINE_STATE, value, null)<0)
             Log.e(CLASS_ID,"Couldn't set DTR/RTS");
+        else
+            Log.d(CLASS_ID, "Could definitely set DTR/RTS");
     }
 
     private byte[] getLineCoding()
