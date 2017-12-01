@@ -85,18 +85,6 @@ public class CDCSerialDevice extends UsbSerialDevice
 
             asyncMode = true;
 
-            //Activate serial
-            if(setControlCommand(CDC_SET_CONTROL_LINE_STATE, CDC_CONTROL_LINE_ON, null)<0) {
-                Log.e(CLASS_ID,"Couldn't activate control line");
-                return false;
-            }
-            if(setControlCommand(CDC_SET_LINE_CODING, 0, CDC_DEFAULT_LINE_CODING)<0){
-                Log.e(CLASS_ID,"Couldn't set line coding");
-                return false;
-            }
-
-            rts = true;
-            setDtrRts();
 
 
             return true;
@@ -125,6 +113,21 @@ public class CDCSerialDevice extends UsbSerialDevice
         {
             setSyncParams(inEndpoint, outEndpoint);
             asyncMode = false;
+            //Activate serial
+            if(setControlCommand(CDC_SET_CONTROL_LINE_STATE, CDC_CONTROL_LINE_ON, null)<0) {
+                Log.e(CLASS_ID,"Couldn't activate control line");
+                return false;
+            }else
+                Log.d(CLASS_ID,"Control line activated");
+            if(setControlCommand(CDC_SET_LINE_CODING, 0, CDC_DEFAULT_LINE_CODING)<0){
+                Log.e(CLASS_ID,"Couldn't set line coding");
+                return false;
+            }else
+                Log.d(CLASS_ID,"Line Coding set");
+
+            rts = true;
+            setDtrRts();
+
             return true;
         }else
         {
