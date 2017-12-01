@@ -113,20 +113,6 @@ public class CDCSerialDevice extends UsbSerialDevice
         {
             setSyncParams(inEndpoint, outEndpoint);
             asyncMode = false;
-            //Activate serial
-            if(setControlCommand(CDC_SET_CONTROL_LINE_STATE, CDC_CONTROL_LINE_ON, null)<0) {
-                Log.e(CLASS_ID,"Couldn't activate control line");
-                return false;
-            }else
-                Log.d(CLASS_ID,"Control line activated");
-            if(setControlCommand(CDC_SET_LINE_CODING, 0, CDC_DEFAULT_LINE_CODING)<0){
-                Log.e(CLASS_ID,"Couldn't set line coding");
-                return false;
-            }else
-                Log.d(CLASS_ID,"Line Coding set");
-
-            rts = true;
-            setDtrRts();
 
             return true;
         }else
@@ -307,6 +293,23 @@ public class CDCSerialDevice extends UsbSerialDevice
                 return false;
             }
 
+            //Activate serial
+            rts = true;
+            setDtrRts();
+            
+            if(setControlCommand(CDC_SET_CONTROL_LINE_STATE, CDC_CONTROL_LINE_ON, null)<0) {
+                Log.e(CLASS_ID,"Couldn't activate control line");
+                return false;
+            }else
+                Log.d(CLASS_ID,"Control line activated");
+            if(setControlCommand(CDC_SET_LINE_CODING, 0, CDC_DEFAULT_LINE_CODING)<0){
+                Log.e(CLASS_ID,"Couldn't set line coding");
+                return false;
+            }else
+                Log.d(CLASS_ID,"Line Coding set");
+
+
+
             ctrlEndpoint = null;
             inEndpoint = null;
             outEndpoint = null;
@@ -337,6 +340,25 @@ public class CDCSerialDevice extends UsbSerialDevice
                 Log.d(CLASS_ID,"Control interface claimed");
             }
             ctrlEndpoint = mControlInterface.getEndpoint(0);
+
+            //Activate serial
+            rts = true;
+            setDtrRts();
+
+
+            if(setControlCommand(CDC_SET_CONTROL_LINE_STATE, CDC_CONTROL_LINE_ON, null)<0) {
+                Log.e(CLASS_ID,"Couldn't activate control line");
+                return false;
+            }else
+                Log.d(CLASS_ID,"Control line activated");
+            if(setControlCommand(CDC_SET_LINE_CODING, 0, CDC_DEFAULT_LINE_CODING)<0){
+                Log.e(CLASS_ID,"Couldn't set line coding");
+                return false;
+            }else
+                Log.d(CLASS_ID,"Line Coding set");
+
+
+
 
             if(!connection.claimInterface(mInterface,true)){
                 Log.e(CLASS_ID,"Could not claim data interface");
